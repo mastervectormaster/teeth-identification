@@ -56,10 +56,10 @@ def convert_group_yolov5(input_dir=INPUT_DIR, output_dir=OUTPUT_DIR):       # ma
     json_files = glob.glob(path.join(input_dir, "*.json"))
     labels = []
     for json_file in json_files:
+        print("Parsing {}".format(json_file))
         f = open(json_file)
         raw_data = json.load(f)
         f.close()
-
         category_id_to_name_dict = {}   # category_id => tooth_id
         bboxes = {}                     # tooth_id => bbox
 
@@ -103,14 +103,15 @@ def convert_group_yolov5(input_dir=INPUT_DIR, output_dir=OUTPUT_DIR):       # ma
             group_boxes = list(map(lambda teeth_id: bboxes[teeth_id], group))
             big_box = get_big_box(group_boxes)
             label_strs.append(convert_yolov5_str(class_id, big_box, image_width, image_height))     
-
-        label_strs_reduce = reduce(lambda a, b: a + '\n' + b, label_strs)           # concat all boxes to fit in one txt file
+        
+        label_strs_reduce = "" if len(label_strs) == 0 else reduce(lambda a, b: a + '\n' + b, label_strs)           # concat all boxes to fit in one txt file
         txt_file_name = path.basename(json_file)[:-5] + '.txt'
         image_file_name = raw_data['images'][0]['file_name']
         f = open(path.join(output_dir, txt_file_name), "w")                         # write to txt file
         f.write(label_strs_reduce)
         f.close()
         shutil.copyfile(path.join(input_dir, image_file_name), path.join(output_dir, image_file_name))          # copy image file
+        print("{} converted".format(json_file))
 
 if __name__ == "__main__":
     convert_group_yolov5(input_dir=INPUT_DIR, output_dir=OUTPUT_DIR)
