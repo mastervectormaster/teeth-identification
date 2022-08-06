@@ -13,6 +13,7 @@ import shutil
 
 INPUT_DIR = 'data/XRAY/right'
 OUTPUT_DIR = 'output'
+LABEL_FILE_NAME = 'labels.txt'
 
 def convert_to_min_max_box(bbox_coco):              # (xmin, ymin, width, height) => (xmin, ymin, xmax, ymax)
     return {
@@ -52,7 +53,7 @@ def convert_yolov5_str(class_id, bbox, image_width, image_height):          # co
 
     return "{} {} {} {} {}".format(class_id, bbox_center_x, bbox_center_y, bbox_width, bbox_height)
 
-def convert_group_yolov5(input_dir=INPUT_DIR, output_dir=OUTPUT_DIR):       # main function to convert all images in the input directory into yolov5 format
+def convert_group_yolov5(input_dir=INPUT_DIR, output_dir=OUTPUT_DIR, label_file_name=LABEL_FILE_NAME):       # main function to convert all images in the input directory into yolov5 format
     json_files = glob.glob(path.join(input_dir, "*.json"))
     labels = []
     for json_file in json_files:
@@ -112,6 +113,10 @@ def convert_group_yolov5(input_dir=INPUT_DIR, output_dir=OUTPUT_DIR):       # ma
         f.close()
         shutil.copyfile(path.join(input_dir, image_file_name), path.join(output_dir, image_file_name))          # copy image file
         print("{} converted".format(json_file))
+    
+    f = open(label_file_name, "w")                         # write labels to txt file
+    f.write(reduce(lambda a, b: a + '\n' + b, labels))
+    f.close()
 
 if __name__ == "__main__":
-    convert_group_yolov5(input_dir=INPUT_DIR, output_dir=OUTPUT_DIR)
+    convert_group_yolov5(input_dir=INPUT_DIR, output_dir=OUTPUT_DIR, label_file_name=LABEL_FILE_NAME)
